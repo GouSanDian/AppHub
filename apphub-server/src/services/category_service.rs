@@ -12,9 +12,10 @@ pub async fn create_category(
     description: Option<&str>,
     sort_order: i32,
 ) -> Result<i64, AppError> {
-    // 检查名称是否已存在
+    // 检查名称是否已被活跃分类使用（排除已软删除的分类）
     let existing = Category::find()
         .filter(CategoryColumn::Name.eq(name))
+        .filter(CategoryColumn::Status.eq(1))
         .one(db)
         .await?;
 
@@ -79,6 +80,18 @@ pub async fn update_category(
     let mut category_active: ActiveModel = category.into();
 
     if let Some(n) = name {
+        // 检查新名称是否被其他活跃分类使用（排除当前分类和已删除的分类）
+        let existing = Category::find()
+            .filter(CategoryColumn::Name.eq(n))
+            .filter(CategoryColumn::Id.ne(id))
+            .filter(CategoryColumn::Status.eq(1))
+            .one(db)
+            .await?;
+
+        if existing.is_some() {
+            return Err(AppError::Conflict("分类名称已存在".to_string()));
+        }
+
         category_active.name = Set(n.to_string());
     }
 

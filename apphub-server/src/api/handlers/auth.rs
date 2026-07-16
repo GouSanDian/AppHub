@@ -122,7 +122,8 @@ pub async fn get_user_info(
             "nickname": user.nickname,
             "email": user.email,
             "avatar": user.avatar,
-            "role": role.name
+            "role": role.name,
+            "role_id": role.id
         }
     })))
 }

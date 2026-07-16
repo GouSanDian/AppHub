@@ -9,3 +9,4 @@ pub mod file_service;
 pub mod report_service;
 pub mod cache_service;
 pub mod category_service;
+pub mod scan_record_service;

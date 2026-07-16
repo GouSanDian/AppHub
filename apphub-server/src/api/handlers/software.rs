@@ -46,6 +46,8 @@ pub struct SoftwareQuery {
     pub page_size: Option<u64>,
     pub category_id: Option<i64>,
     pub status: Option<i16>,
+    pub keyword: Option<String>,
+    pub platform: Option<String>,
 }
 
 /// 获取软件列表
@@ -56,10 +58,12 @@ pub async fn list(
     let page = query.page.unwrap_or(1);
     let page_size = query.page_size.unwrap_or(10);
 
-    let (softwares, total) = software_service::list_software(
+    let (softwares, total) = software_service::list_software_with_filters(
         &state.db,
         query.category_id,
         query.status,
+        query.keyword.as_deref(),
+        query.platform.as_deref(),
         page,
         page_size,
     )

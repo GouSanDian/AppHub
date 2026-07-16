@@ -19,6 +19,7 @@ pub struct UserListResponse {
     pub email: Option<String>,
     pub status: i16,
     pub role_id: i64,
+    pub role: String,
     pub created_at: String,
 }
 
@@ -38,6 +39,7 @@ pub struct UpdateUserRequest {
     pub nickname: Option<String>,
     pub email: Option<String>,
     pub status: Option<i16>,
+    pub role_id: Option<i64>,
 }
 
 /// 分页查询参数
@@ -45,6 +47,9 @@ pub struct UpdateUserRequest {
 pub struct PaginationQuery {
     pub page: Option<u64>,
     pub page_size: Option<u64>,
+    pub keyword: Option<String>,
+    pub role: Option<String>,
+    pub status: Option<i16>,
 }
 
 /// 获取用户列表
@@ -55,7 +60,24 @@ pub async fn list(
     let page = query.page.unwrap_or(1);
     let page_size = query.page_size.unwrap_or(10);
 
-    let (users, total) = user_service::list_users(&state.db, page, page_size).await?;
+    let params = user_service::ListUsersParams {
+        page,
+        page_size,
+        keyword: query.keyword.clone(),
+        role: query.role.clone(),
+        status: query.status,
+    };
+
+    let (users, total) = user_service::list_users(&state.db, params).await?;
+
+    // 获取所有角色信息
+    use crate::models::role::{Entity as Role};
+    use sea_orm::EntityTrait;
+    let all_roles = Role::find().all(&state.db).await?;
+    let role_map: std::collections::HashMap<i64, String> = all_roles
+        .into_iter()
+        .map(|r| (r.id, r.name))
+        .collect();
 
     let user_list: Vec<UserListResponse> = users
         .into_iter()
@@ -66,6 +88,7 @@ pub async fn list(
             email: u.email,
             status: u.status,
             role_id: u.role_id,
+            role: role_map.get(&u.role_id).cloned().unwrap_or_else(|| "unknown".to_string()),
             created_at: u.created_at.to_rfc3339(),
         })
         .collect();
@@ -153,6 +176,7 @@ pub async fn update(
         req.nickname.as_deref(),
         req.email.as_deref(),
         req.status,
+        req.role_id,
     )
     .await?;
 
@@ -172,6 +196,26 @@ pub async fn delete(
     Ok(Json(json!({
         "code": 200,
         "message": "删除成功",
+        "data": null
+    })))
+}
+
+/// 重置密码请求
+#[derive(Debug, Deserialize)]
+pub struct ResetPasswordRequest {
+    pub new_password: String,
+}
+
+/// 重置用户密码
+pub async fn reset_password(
+    State(state): State<AppState>,
+    Path(id): Path<i64>,
+    Json(req): Json<ResetPasswordRequest>,
+) -> Result<Json<serde_json::Value>, AppError> {
+    user_service::reset_password(&state.db, id, &req.new_password).await?;
+    Ok(Json(json!({
+        "code": 200,
+        "message": "密码重置成功",
         "data": null
     })))
 }

@@ -32,6 +32,9 @@ async fn main() -> anyhow::Result<()> {
     let db = config::init_database(&config.database.url).await?;
     info!("数据库连接成功");
 
+    // 运行迁移（创建表）
+    run_migrations(&db).await?;
+
     // 构建应用状态
     let state = config::AppState {
         db: db.clone(),
@@ -72,4 +75,52 @@ fn init_tracing() {
 /// 健康检查接口
 async fn health_check() -> &'static str {
     "OK"
+}
+
+/// 运行数据库迁移
+async fn run_migrations(db: &sea_orm::DatabaseConnection) -> anyhow::Result<()> {
+    use sea_orm::{ConnectionTrait, Statement};
+
+    // 读取 migrations 目录
+    let migrations_dir = std::path::Path::new("migrations");
+    if !migrations_dir.exists() {
+        info!("migrations 目录不存在，跳过迁移");
+        return Ok(());
+    }
+
+    let mut entries: Vec<_> = std::fs::read_dir(migrations_dir)?
+        .filter_map(|e| e.ok())
+        .filter(|e| e.path().extension().map_or(false, |ext| ext == "sql"))
+        .collect();
+    entries.sort_by_key(|e| e.file_name());
+
+    for entry in entries {
+        let path = entry.path();
+        let file_name = path.file_name().unwrap().to_string_lossy().to_string();
+        let sql = std::fs::read_to_string(&path)?;
+
+        // 按分号分割执行多条语句
+        for stmt in sql.split(';') {
+            let stmt = stmt.trim();
+            if stmt.is_empty() {
+                continue;
+            }
+            // 忽略 CREATE TABLE IF NOT EXISTS 已存在的情况
+            if let Err(e) = db.execute(Statement::from_string(
+                db.get_database_backend(),
+                stmt.to_string(),
+            )).await {
+                // 忽略 "already exists" 类错误
+                let err_str = e.to_string();
+                if err_str.contains("already exists") {
+                    continue;
+                }
+                let truncated: String = stmt.chars().take(80).collect();
+                tracing::warn!("执行迁移 {} 出错: {} (语句: {})", file_name, err_str, truncated);
+            }
+        }
+        info!("迁移执行完成: {}", file_name);
+    }
+
+    Ok(())
 }

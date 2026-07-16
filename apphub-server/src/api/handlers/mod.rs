@@ -1,7 +1,8 @@
 pub mod auth;
-pub mod user;
-pub mod software;
 pub mod blacklist;
+pub mod category;
 pub mod client;
 pub mod report;
-pub mod category;
+pub mod role;
+pub mod software;
+pub mod user;

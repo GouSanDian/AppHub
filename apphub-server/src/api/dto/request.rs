@@ -68,6 +68,16 @@ pub struct UpdateBlacklistRequest {
     pub status: Option<i16>,
 }
 
+/// 黑名单列表查询参数
+#[derive(Debug, Deserialize)]
+pub struct BlacklistQueryParams {
+    pub keyword: Option<String>,
+    pub risk_level: Option<i16>,
+    pub status: Option<i16>,
+    pub page: Option<u64>,
+    pub page_size: Option<u64>,
+}
+
 /// 客户端注册请求
 #[derive(Debug, Deserialize, Validate)]
 pub struct RegisterClientRequest {

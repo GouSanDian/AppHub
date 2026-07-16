@@ -22,6 +22,7 @@ pub fn create_routes(state: AppState) -> Router {
     let protected = Router::<AppState>::new()
         .route("/auth/user-info", get(handlers::auth::get_user_info))
         .nest("/users", user_routes())
+        .nest("/roles", role_routes())
         .nest("/softwares", software_routes())
         .nest("/blacklists", blacklist_routes())
         .nest("/clients", Router::new().route("/", get(handlers::client::list)))
@@ -38,7 +39,7 @@ pub fn create_routes(state: AppState) -> Router {
         .with_state(state)
 }
 
-/// 用户路由（需要认证）
+/// 用户路由（需要认证 + 管理员权限）
 fn user_routes() -> Router<AppState> {
     Router::new()
         .route("/", get(handlers::user::list).post(handlers::user::create))
@@ -48,6 +49,19 @@ fn user_routes() -> Router<AppState> {
                 .put(handlers::user::update)
                 .delete(handlers::user::delete),
         )
+        .route("/:id/reset-password", post(handlers::user::reset_password))
+        .layer(middleware::from_fn(
+            super::middleware::authz::admin_required,
+        ))
+}
+
+/// 角色路由（需要认证 + 管理员权限）
+fn role_routes() -> Router<AppState> {
+    Router::new()
+        .route("/", get(handlers::role::list))
+        .layer(middleware::from_fn(
+            super::middleware::authz::admin_required,
+        ))
 }
 
 /// 软件路由（需要认证）
@@ -95,6 +109,7 @@ fn client_routes() -> Router<AppState> {
 fn report_routes() -> Router<AppState> {
     Router::new()
         .route("/process-scans", post(handlers::report::report_scan))
+        .route("/scan-records", get(handlers::report::get_scan_records))
         .route("/statistics", get(handlers::report::get_statistics))
 }
 

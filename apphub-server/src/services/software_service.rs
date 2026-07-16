@@ -75,6 +75,50 @@ pub async fn list_software(
     Ok((softwares, total))
 }
 
+/// 获取软件列表（带搜索过滤）
+pub async fn list_software_with_filters(
+    db: &DatabaseConnection,
+    category_id: Option<i64>,
+    status: Option<i16>,
+    keyword: Option<&str>,
+    platform: Option<&str>,
+    page: u64,
+    page_size: u64,
+) -> Result<(Vec<Model>, u64), AppError> {
+    use sea_orm::{Condition, PaginatorTrait, QuerySelect};
+
+    let mut query = Software::find();
+
+    if let Some(cat_id) = category_id {
+        query = query.filter(SoftwareColumn::CategoryId.eq(cat_id));
+    }
+
+    if let Some(st) = status {
+        query = query.filter(SoftwareColumn::Status.eq(st));
+    }
+
+    if let Some(kw) = keyword {
+        if !kw.is_empty() {
+            let keyword_condition = Condition::any()
+                .add(SoftwareColumn::Name.contains(kw))
+                .add(SoftwareColumn::Description.contains(kw));
+            query = query.filter(keyword_condition);
+        }
+    }
+
+    if let Some(plat) = platform {
+        if !plat.is_empty() {
+            query = query.filter(SoftwareColumn::Platform.contains(plat));
+        }
+    }
+
+    let paginator = query.paginate(db, page_size);
+    let total = paginator.num_items().await?;
+    let softwares = paginator.fetch_page(page - 1).await?;
+
+    Ok((softwares, total))
+}
+
 /// 获取软件详情
 pub async fn get_software(db: &DatabaseConnection, id: i64) -> Result<Option<Model>, AppError> {
     let software = Software::find()
