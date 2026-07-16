@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import request from '@/utils/request'
-// import { invoke } from '@tauri-apps/api/core'
 
 const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
 
@@ -61,47 +60,35 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Actions
   async function login(username: string, password: string): Promise<boolean> {
-    loading.value = true
-    error.value = null
-
     try {
-      // 调用后端登录 API
-      const response = await request.post<any, ApiResponse<LoginResponse>>('/auth/login', {
-        username,
-        password,
-      })
-
-      const { access_token, refresh_token } = response.data
-
-      // 保存 token
-      token.value = access_token
-      refreshToken.value = refresh_token
-      localStorage.setItem('token', access_token)
-      localStorage.setItem('refreshToken', refresh_token)
-
-      // 同步 token 和 server URL 到 Rust 后端，供扫描服务等使用
+      const res = await request.post<any, any>('/auth/login', { username, password })
+      const data = res.data
+      
+      token.value = data.access_token
+      refreshToken.value = data.refresh_token
+      userInfo.value = data.user
+      
+      localStorage.setItem('token', data.access_token)
+      localStorage.setItem('refreshToken', data.refresh_token)
+  
+      // 同步到 Rust 后端 (使用 try-catch 隔离，避免阻塞主流程)
       if (isTauri) {
         try {
-          // TODO
-          const { invoke } = await import('@tauri-apps/api/core')
-          await invoke('sync_token', { accessToken: access_token, refreshToken: refresh_token })
-          // 同步服务端地址
+          await invoke('sync_token', { accessToken: data.access_token, refreshToken: data.refresh_token })
           const serverUrl = localStorage.getItem('apphub_server_url') || 'http://localhost:8080/api/v1'
           await invoke('sync_server_url', { serverUrl })
         } catch (e) {
-          console.error('同步 token 到后端失败:', e)
+          console.warn('同步 token 到 Rust 后端失败 (非致命):', e)
         }
       }
-
-      // 获取用户信息
-      await fetchUserInfo()
-
+  
+      // 如果后端返回的 user 信息不完整，再调用 fetchUserInfo
+      // await fetchUserInfo() 
+  
       return true
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : '登录失败'
-      return false
-    } finally {
-      loading.value = false
+    } catch (error) {
+      console.error('登录请求异常:', error)
+      throw error // 抛出给 LoginView 处理
     }
   }
 
@@ -121,6 +108,7 @@ export const useAuthStore = defineStore('auth', () => {
       // 清除 Rust 后端的 token
       if (isTauri) {
         try {
+          const { invoke } = await import('@tauri-apps/api/core')
           await invoke('logout')
         } catch (e) {
           console.error('清除后端 token 失败:', e)

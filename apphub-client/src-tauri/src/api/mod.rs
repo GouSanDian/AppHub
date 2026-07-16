@@ -101,12 +101,21 @@ fn get_server_url() -> String {
 
 /// 设置Token
 pub fn set_tokens(access: String, refresh: String) {
-    tracing::info!("[API] 设置 token: {}...", &access[..40.min(access.len())]);
-    let mut at = ACCESS_TOKEN.lock().unwrap();
-    *at = Some(access);
-    let mut rt = REFRESH_TOKEN.lock().unwrap();
-    *rt = Some(refresh);
-    tracing::info!("[API] Token 已更新，当前值: {:?}", get_access_token().map(|t| format!("{}...", &t[..40.min(t.len())])));
+    let access_preview = access.chars().take(40).collect::<String>();
+    tracing::info!("[API] 设置 token: {}...", access_preview);
+    
+    // 使用独立的作用域块，确保锁在块结束时自动释放
+    {
+        let mut at = ACCESS_TOKEN.lock().unwrap();
+        *at = Some(access);
+    } // <-- ACCESS_TOKEN 的锁在这里释放
+    
+    {
+        let mut rt = REFRESH_TOKEN.lock().unwrap();
+        *rt = Some(refresh);
+    } // <-- REFRESH_TOKEN 的锁在这里释放
+
+    tracing::info!("[API] Token 已成功同步到 Rust 后端");
 }
 
 /// 获取访问Token

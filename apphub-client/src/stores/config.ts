@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
+// import { invoke } from '@tauri-apps/api/core'
 
 const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
 
@@ -31,6 +31,7 @@ export const useConfigStore = defineStore('config', () => {
   async function load() {
     if (isTauri) {
       try {
+        const { invoke } = await import('@tauri-apps/api/core')
         const cfg = await invoke<TauriAppConfig>('get_config')
         serverUrl.value = cfg.server_url || DEFAULT_SERVER_URL
         downloadPath.value = cfg.download_path || getDefaultDownloadPath()
@@ -66,6 +67,7 @@ export const useConfigStore = defineStore('config', () => {
   async function save() {
     if (isTauri) {
       try {
+        const { invoke } = await import('@tauri-apps/api/core')
         await invoke('set_config', { key: 'server_url', value: serverUrl.value })
         await invoke('set_config', { key: 'download_path', value: downloadPath.value })
         await invoke('set_config', { key: 'auto_start', value: autoStart.value })

@@ -88,6 +88,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const configStore = useConfigStore()
 const formRef = ref<FormInstance>()
+const loading = ref(false)
 
 const form = reactive({
   serverUrl: configStore.serverUrl || 'http://localhost:8080/api/v1',
@@ -109,29 +110,30 @@ onMounted(() => {
 
 const handleLogin = async () => {
   if (!formRef.value) return
-
-  try {
-    const valid = await formRef.value.validate()
-    if (valid) {
-      // 先保存服务器地址到配置并更新 axios baseURL
-      configStore.serverUrl = form.serverUrl
-      setBaseURL(form.serverUrl)
-      await configStore.save()
-
+  
+  await formRef.value.validate(async (valid) => {
+    if (!valid) return
+    
+    loading.value = true // 开启 loading
+    try {
       const success = await authStore.login(form.username, form.password)
       if (success) {
         ElMessage.success('登录成功')
-        // 根据角色跳转不同页面
+        // 根据角色跳转
         if (authStore.isAdmin) {
           router.push('/admin')
         } else {
           router.push('/')
         }
       }
+    } catch (error: any) {
+      console.error('登录失败:', error)
+      ElMessage.error(error.message || '登录失败，请检查用户名或密码')
+    } finally {
+      // ⚠️ 关键：无论成功、失败还是抛出异常，都必须关闭 loading
+      loading.value = false 
     }
-  } catch (error) {
-    console.error('登录失败:', error)
-  }
+  })
 }
 </script>
 
