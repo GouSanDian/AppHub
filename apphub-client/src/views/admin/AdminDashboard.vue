@@ -65,7 +65,7 @@
           </template>
           <el-table :data="recentLogins" style="width: 100%">
             <el-table-column prop="username" label="用户名" />
-            <el-table-column prop="loginTime" label="登录时间" />
+            <el-table-column prop="login_time" label="登录时间" />
           </el-table>
         </el-card>
       </el-col>
@@ -103,10 +103,7 @@ const stats = ref({
   blacklistCount: 0,
 })
 
-const recentLogins = ref([
-  { username: 'admin', loginTime: '2024-01-15 10:30:00' },
-  { username: 'user1', loginTime: '2024-01-15 09:15:00' },
-])
+const recentLogins = ref<Array<{ username: string; login_time: string }>>([])
 
 onMounted(async () => {
   await loadStats()
@@ -114,17 +111,17 @@ onMounted(async () => {
 
 const loadStats = async () => {
   try {
-    // 并行请求各项统计数据
-    const [usersRes, softwareRes, blacklistRes] = await Promise.all([
-      request.get<any, any>('/users'),
-      request.get<any, any>('/softwares'),
-      request.get<any, any>('/blacklists'),
-    ])
+    // 调用统计接口
+    const res = await request.get<any, any>('/reports/statistics')
+    const data = res.data || {}
 
-    stats.value.userCount = usersRes.data?.length || 0
-    stats.value.softwareCount = softwareRes.data?.length || 0
-    stats.value.blacklistCount = blacklistRes.data?.length || 0
-    stats.value.downloadCount = 0 // TODO: 从后端获取下载统计
+    stats.value.userCount = data.userCount || 0
+    stats.value.softwareCount = data.softwareCount || 0
+    stats.value.downloadCount = data.downloadCount || 0
+    stats.value.blacklistCount = data.blacklistCount || 0
+
+    // 最近登录
+    recentLogins.value = data.recentLogins || []
   } catch (error) {
     console.error('加载统计数据失败:', error)
   }

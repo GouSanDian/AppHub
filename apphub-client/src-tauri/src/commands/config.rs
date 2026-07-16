@@ -64,7 +64,7 @@ fn save_config_to_disk(config: &AppConfig) -> Result<(), String> {
 }
 
 // 全局配置
-static CONFIG: Lazy<Mutex<AppConfig>> = Lazy::new(|| Mutex::new(load_config()));
+pub(crate) static CONFIG: Lazy<Mutex<AppConfig>> = Lazy::new(|| Mutex::new(load_config()));
 
 /// 获取配置
 #[command]

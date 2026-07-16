@@ -23,7 +23,7 @@
               />
             </el-select>
           </div>
-          <el-button type="primary" @click="handleUpload">上传软件</el-button>
+          <el-button v-if="authStore.isAdmin" type="primary" @click="handleUpload">上传软件</el-button>
         </div>
       </template>
 
@@ -130,6 +130,8 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { Search, Box } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import { useAuthStore } from '@/stores/auth'
+import { useConfigStore } from '@/stores/config'
 import type { UploadFile, UploadInstance, FormInstance, FormRules } from 'element-plus'
 
 interface Software {
@@ -157,6 +159,8 @@ const uploading = ref(false)
 const uploadRef = ref<UploadInstance>()
 const uploadFormRef = ref<FormInstance>()
 const selectedFile = ref<UploadFile | null>(null)
+const authStore = useAuthStore()
+const configStore = useConfigStore()
 
 const uploadForm = reactive({
   name: '',
@@ -325,7 +329,8 @@ const handleDownload = async (software: Software) => {
       window.URL.revokeObjectURL(url)
     }, 1000)
 
-    ElMessage.success('下载已开始')
+    const downloadPath = configStore.downloadPath || '默认下载目录'
+    ElMessage.success(`软件下载完成，请查看 ${downloadPath} 目录`)
   } catch (error) {
     console.error('下载失败:', error)
     const message = error instanceof Error ? error.message : '下载失败，请稍后重试'

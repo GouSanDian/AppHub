@@ -70,25 +70,7 @@
       </el-col>
     </el-row>
 
-    <el-row :gutter="20" style="margin-top: 20px;">
-      <el-col :xs="24">
-        <el-card>
-          <template #header>
-            <div class="card-header">
-              <el-icon><Info-filled /></el-icon>
-              <span>关于</span>
-            </div>
-          </template>
 
-          <div class="about-info">
-            <h3>应用中心客户端</h3>
-            <p>版本: 1.0.0</p>
-            <p>基于 Tauri + Vue 3 构建</p>
-            <p>© 2024 AppHub Team</p>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
 
     <div class="actions">
       <el-button type="primary" size="large" @click="saveSettings">保存设置</el-button>

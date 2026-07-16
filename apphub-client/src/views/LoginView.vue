@@ -28,6 +28,9 @@
             placeholder="请输入用户名"
             :prefix-icon="User"
             size="large"
+            autocapitalize="off"
+            autocomplete="off"
+            spellcheck="false"
           />
         </el-form-item>
 

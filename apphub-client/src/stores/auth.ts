@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import request from '@/utils/request'
+// import { invoke } from '@tauri-apps/api/core'
+
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
 
 // 用户信息类型
 interface UserInfo {
@@ -9,7 +12,8 @@ interface UserInfo {
   nickname: string
   email?: string
   avatar?: string
-  role: string
+  role: string       // 'super_admin' | 'admin' | 'user'
+  role_id?: number
 }
 
 // 后端统一响应格式
@@ -38,7 +42,22 @@ export const useAuthStore = defineStore('auth', () => {
   const isLoggedIn = computed(() => !!token.value)
   const username = computed(() => userInfo.value?.username || '')
   const nickname = computed(() => userInfo.value?.nickname || '')
-  const isAdmin = computed(() => userInfo.value?.role === 'admin')
+  const role = computed(() => userInfo.value?.role || '')
+  const roleId = computed(() => userInfo.value?.role_id ?? 0)
+  const isSuperAdmin = computed(() => userInfo.value?.role === 'super_admin')
+  // 管理员（包含超级管理员和普通管理员）
+  const isAdmin = computed(() =>
+    userInfo.value?.role === 'admin' || userInfo.value?.role === 'super_admin'
+  )
+  // 判断当前用户是否拥有指定角色（支持传入角色名或角色 id）
+  function hasRole(target: string | number): boolean {
+    if (typeof target === 'number') return roleId.value === target
+    return role.value === target
+  }
+  // 判断当前用户是否拥有管理员或超级管理员权限
+  function canManageUsers(): boolean {
+    return isAdmin.value
+  }
 
   // Actions
   async function login(username: string, password: string): Promise<boolean> {
@@ -59,6 +78,20 @@ export const useAuthStore = defineStore('auth', () => {
       refreshToken.value = refresh_token
       localStorage.setItem('token', access_token)
       localStorage.setItem('refreshToken', refresh_token)
+
+      // 同步 token 和 server URL 到 Rust 后端，供扫描服务等使用
+      if (isTauri) {
+        try {
+          // TODO
+          const { invoke } = await import('@tauri-apps/api/core')
+          await invoke('sync_token', { accessToken: access_token, refreshToken: refresh_token })
+          // 同步服务端地址
+          const serverUrl = localStorage.getItem('apphub_server_url') || 'http://localhost:8080/api/v1'
+          await invoke('sync_server_url', { serverUrl })
+        } catch (e) {
+          console.error('同步 token 到后端失败:', e)
+        }
+      }
 
       // 获取用户信息
       await fetchUserInfo()
@@ -84,6 +117,15 @@ export const useAuthStore = defineStore('auth', () => {
       userInfo.value = null
       localStorage.removeItem('token')
       localStorage.removeItem('refreshToken')
+
+      // 清除 Rust 后端的 token
+      if (isTauri) {
+        try {
+          await invoke('logout')
+        } catch (e) {
+          console.error('清除后端 token 失败:', e)
+        }
+      }
     }
   }
 
@@ -111,7 +153,12 @@ export const useAuthStore = defineStore('auth', () => {
     isLoggedIn,
     username,
     nickname,
+    role,
+    roleId,
     isAdmin,
+    isSuperAdmin,
+    hasRole,
+    canManageUsers,
     login,
     logout,
     fetchUserInfo,

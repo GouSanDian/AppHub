@@ -26,6 +26,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             // 认证命令
             commands::auth::login,
+            commands::auth::sync_token,
+            commands::auth::sync_server_url,
             commands::auth::logout,
             commands::auth::get_user_info,
             // 扫描命令
@@ -54,13 +56,13 @@ fn main() {
 
             // 启动心跳服务
             tauri::async_runtime::spawn(async move {
-                services::heartbeat::start_heartbeat_service(app_handle).await;
+                //services::heartbeat::start_heartbeat_service(app_handle).await;
             });
 
             // 启动扫描服务
             let app_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
-                services::scanner::start_scan_service(app_handle).await;
+                //services::scanner::start_scan_service(app_handle).await;
             });
 
             Ok(())

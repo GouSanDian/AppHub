@@ -3,7 +3,7 @@
     <!-- 顶部栏 -->
     <el-header class="home-header">
       <div class="header-left">
-        <h1 class="header-title">应用中心</h1>
+        <h1 class="header-title">AppHub</h1>
       </div>
       <div class="header-right">
         <el-dropdown @command="handleCommand">
@@ -38,10 +38,6 @@
             <el-icon><Box /></el-icon>
             <span>软件中心</span>
           </el-menu-item>
-          <el-menu-item index="/downloads">
-            <el-icon><Download /></el-icon>
-            <span>下载管理</span>
-          </el-menu-item>
           <el-menu-item index="/settings">
             <el-icon><Setting /></el-icon>
             <span>设置</span>
@@ -65,7 +61,6 @@ import {
   ArrowDown,
   HomeFilled,
   Box,
-  Download,
   Setting,
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'

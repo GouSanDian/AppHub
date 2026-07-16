@@ -31,6 +31,10 @@
           <el-icon><Warning /></el-icon>
           <span>黑名单管理</span>
         </el-menu-item>
+        <el-menu-item index="/admin/blacklist-scan">
+          <el-icon><Search /></el-icon>
+          <span>黑名单扫描</span>
+        </el-menu-item>
         <el-menu-item index="/admin/reports">
           <el-icon><DataLine /></el-icon>
           <span>统计报表</span>
@@ -57,8 +61,7 @@
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="profile">个人信息</el-dropdown-item>
-                <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+                <el-dropdown-item command="logout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -84,6 +87,7 @@ import {
   Warning,
   DataLine,
   ArrowDown,
+  Search,
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 
@@ -119,8 +123,6 @@ const handleCommand = async (command: string) => {
     } catch {
       // 用户取消
     }
-  } else if (command === 'profile') {
-    ElMessage.info('个人信息功能开发中')
   }
 }
 </script>

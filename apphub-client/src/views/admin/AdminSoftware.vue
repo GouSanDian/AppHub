@@ -8,6 +8,45 @@
         </div>
       </template>
 
+      <!-- 搜索栏 -->
+      <div class="search-bar">
+        <el-input
+          v-model="searchKeyword"
+          placeholder="搜索软件名称..."
+          clearable
+          style="width: 250px; margin-right: 12px;"
+          @clear="handleSearch"
+          @keyup.enter="handleSearch"
+        />
+        <el-select
+          v-model="searchPlatform"
+          placeholder="平台"
+          clearable
+          style="width: 120px; margin-right: 12px;"
+          @change="handleSearch"
+        >
+          <el-option label="macOS" value="mac" />
+          <el-option label="Linux" value="linux" />
+          <el-option label="Windows" value="windows" />
+        </el-select>
+        <el-select
+          v-model="searchCategoryId"
+          placeholder="分类"
+          clearable
+          style="width: 150px; margin-right: 12px;"
+          @change="handleSearch"
+        >
+          <el-option
+            v-for="cat in categories"
+            :key="cat.id"
+            :label="cat.name"
+            :value="cat.id"
+          />
+        </el-select>
+        <el-button type="primary" @click="handleSearch">搜索</el-button>
+        <el-button @click="handleReset">重置</el-button>
+      </div>
+
       <el-table :data="softwareList" v-loading="loading" style="width: 100%">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="name" label="名称" />
@@ -134,6 +173,11 @@ const uploadRef = ref<UploadInstance>()
 const uploadFormRef = ref<FormInstance>()
 const selectedFile = ref<UploadFile | null>(null)
 
+// 搜索参数
+const searchKeyword = ref('')
+const searchPlatform = ref('')
+const searchCategoryId = ref<number | ''>('')
+
 const uploadForm = reactive({
   name: '',
   version: '',
@@ -165,7 +209,12 @@ onMounted(() => {
 const loadSoftware = async () => {
   loading.value = true
   try {
-    const response = await request.get<any, any>('/softwares')
+    const params: any = {}
+    if (searchKeyword.value) params.keyword = searchKeyword.value
+    if (searchPlatform.value) params.platform = searchPlatform.value
+    if (searchCategoryId.value) params.category_id = searchCategoryId.value
+
+    const response = await request.get<any, any>('/softwares', { params })
     softwareList.value = response.data?.list || []
   } catch (error) {
     ElMessage.error('加载软件列表失败')
@@ -197,6 +246,17 @@ const handleAdd = () => {
   selectedFile.value = null
   uploadRef.value?.clearFiles()
   dialogVisible.value = true
+}
+
+const handleSearch = () => {
+  loadSoftware()
+}
+
+const handleReset = () => {
+  searchKeyword.value = ''
+  searchPlatform.value = ''
+  searchCategoryId.value = ''
+  loadSoftware()
 }
 
 const handleEdit = (row: Software) => {
@@ -264,5 +324,14 @@ const submitUpload = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 16px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
 }
 </style>
