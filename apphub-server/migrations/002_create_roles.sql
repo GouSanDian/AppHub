@@ -20,6 +20,6 @@ INSERT OR IGNORE INTO roles (id, name, description, status) VALUES
 INSERT OR IGNORE INTO roles (id, name, description, status) VALUES
 (3, 'user', '普通用户', 1);
 
--- 插入默认管理员（需要在 roles 表创建后执行）
+-- 插入默认管理员（需要在 roles 表创建后执行, 密码默认为admin）
 INSERT OR IGNORE INTO users (username, password_hash, nickname, role_id, status)
-VALUES ('admin', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNiAYMyzJ/IiO', '超级管理员', 1, 1);
+VALUES ('admin', '$2b$12$EVFw3ad/LwEFSkqEAEoQ/.dDMSutvdrP5ADd1sIspk1gUdtRg6xWS', '超级管理员', 1, 1);

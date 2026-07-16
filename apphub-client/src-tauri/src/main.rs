@@ -56,14 +56,14 @@ fn main() {
 
             // 启动心跳服务
             tauri::async_runtime::spawn(async move {
-                //services::heartbeat::start_heartbeat_service(app_handle).await;
+                services::heartbeat::start_heartbeat_service(app_handle).await;
             });
 
             // 启动扫描服务
-            let app_handle = app.handle().clone();
-            tauri::async_runtime::spawn(async move {
-                //services::scanner::start_scan_service(app_handle).await;
-            });
+            // let app_handle = app.handle().clone();
+            // tauri::async_runtime::spawn(async move {
+            //     services::scanner::start_scan_service(app_handle).await;
+            // });
 
             Ok(())
         })
