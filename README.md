@@ -143,6 +143,19 @@ npm run tauri:dev
 - [Server端详细设计](docs/04-Server端详细设计.md)
 - [Client端详细设计](docs/05-Client端详细设计.md)
 
-## 许可证
 
-MIT
+# 🤝欢迎 Star、使用我们团队的其它产品
+
+大模型呼叫中心系统：https://github.com/lihaiya/freeipcc
+
+大模型人力资源系统：https://github.com/FreeAiHR/FreeAiHR
+
+大模型智能运维系统（持续迭代中）：https://github.com/lihaiya/FreeAiOps
+
+Redis集群双活架构工具：https://github.com/GouSanDian/Redis-HA-Tool
+
+自然语言对话数据库（目前在设计阶段）：https://github.com/GouSanDian/Talk-To-DB
+
+企业私有化部署的软件管家：https://github.com/GouSanDian/AppHub
+
+大模型沙盘系统（目前在设计阶段）：https://github.com/AiSandTable/AiSandTable
