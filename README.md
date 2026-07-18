@@ -159,3 +159,16 @@ Redis集群双活架构工具：https://github.com/GouSanDian/Redis-HA-Tool
 企业私有化部署的软件管家：https://github.com/GouSanDian/AppHub
 
 大模型沙盘系统（目前在设计阶段）：https://github.com/AiSandTable/AiSandTable
+
+# 联系我们
+
+## 微信专属群
+
+<img width="206.2" height="295.6" alt="24a169629bcfead1e3f545e75b8d0e58" src="https://github.com/user-attachments/assets/3953f763-5368-4a97-bf94-6a46c6d83286" />
+
+## 微信二维码
+
+<img width="190.0" height="259.0" alt="b6add25034c22a813d7b45b17c95762a" src="https://github.com/user-attachments/assets/3f5f2463-6e87-43d6-95fe-a24a572fa9f2" />
+
+
+
