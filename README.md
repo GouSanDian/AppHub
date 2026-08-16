@@ -164,7 +164,7 @@ Redis集群双活架构工具：https://github.com/GouSanDian/Redis-HA-Tool
 
 ## 微信专属群
 
-<img width="206.2" height="295.6" alt="24a169629bcfead1e3f545e75b8d0e58" src="https://github.com/user-attachments/assets/3953f763-5368-4a97-bf94-6a46c6d83286" />
+<img width="206.2" height="295.6" alt="008acaa29d0f46965f0c20ee76de5971" src="https://github.com/user-attachments/assets/c183989c-2f9e-4ad2-b4d7-496bdceb309f" />
 
 ## 微信二维码
 
