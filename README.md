@@ -160,7 +160,7 @@ Redis集群双活架构工具：https://github.com/GouSanDian/Redis-HA-Tool
 
 大模型沙盘系统（目前在设计阶段）：https://github.com/AiSandTable/AiSandTable
 
-# 联系我们
+# 联系我们：欢迎点击star、Fork
 
 ## 微信专属群
 
